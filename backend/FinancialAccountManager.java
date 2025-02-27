@@ -35,14 +35,7 @@ class FinancialAccountManager {
     }
 
     public static void performBankingOperations() {
-        Map<String, Double> accountBalances = fetchBalancesFromDB();
-
-        logger.info("Fetching account balances");
-        System.out.println("Account Balances:");
-        accountBalances.forEach((name, balance) -> 
-            System.out.printf("%s: $%.2f%n", name, balance)
-        );
-
+        // We should not be logging account balances!
         processTransaction("Alice", "Bob", 200.25);
     }
 
@@ -53,6 +46,8 @@ class FinancialAccountManager {
 
     public static void processTransaction(String from, String to, double amount) {
         try {
+            // This is a security issue that could result in a double spend. Transfer logic should be occurring
+            // in a DB transaction not in application code.
             Map<String, Double> balances = fetchBalancesFromDB();
 
             if (!balances.containsKey(from) || !balances.containsKey(to)) {
@@ -67,11 +62,12 @@ class FinancialAccountManager {
 
             balances.put(from, balances.get(from) - amount);
             balances.put(to, balances.get(to) + amount);
-            
-            logger.info("Transaction successful: " + from + " sent $" + amount + " to " + to);
-            System.out.printf("Transaction successful: %s sent $%.2f to %s%n", from, amount, to);
+
+            // We should not be logging sensitive money transfers like this.
+            // We could be leaking sensitive information.
+            // We could use audit logs in our db if we need to have full financial records.
         } catch (Exception e) {
-            e.printStackTrace();  
+            e.printStackTrace();
         }
     }
 }
