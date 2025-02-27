@@ -7,7 +7,13 @@ export enum Roles {
   
   export const RolePermissions = {
     [Roles.ADMIN]: {
-      CAN_VIEW_SENSITIVE_DATA: true,
+      // Example of a permission that requires resources
+      CAN_VIEW_SENSITIVE_DATA: {
+        userId: '123',
+        resources: [
+            'loan-details'
+          ],
+      },
       CAN_DELETE_USERS: true,
       CAN_VIEW_TRANSACTION_HISTORY: true,
       CAN_VIEW_ACCOUNT_SETTINGS: true,
@@ -33,9 +39,11 @@ export enum Roles {
   };
   
 
+  // These permissions checks are flawed because they do not check for permissions on specific resources but only on capabilities.
   export function permissionCheck(
     permission: keyof typeof RolePermissions[Roles.ADMIN],
-    session?: { role?: Roles }
+    session?: { role?: Roles },
+    resource: string = ''
   ): boolean {
     if (!session?.role) {
       return false; // Not logged in or no role => no permissions
@@ -44,5 +52,5 @@ export enum Roles {
     if (!perms) {
       return false; 
     }
-    return perms[permission] === true;
+    return perms[permission] === true && perms[permission].hasResource(resource);
   }
